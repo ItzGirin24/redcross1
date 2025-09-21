@@ -1,0 +1,17 @@
+{
+  "name": "pmr-voting-backend",
+  "version": "1.0.0",
+  "description": "PMR Voting System Backend",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5"
+  },
+  "keywords": ["pmr", "voting", "backend"],
+  "author": "SMA IT Abu Bakar",
+  "license": "MIT"
+}

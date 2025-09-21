@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PMR Voting System - Firebase Version</title>
+    <title>PMR Voting System - SMA IT Abu Bakar</title>
     <style>
         body {
             font-family: Arial, sans-serif;
             max-width: 800px;
             margin: 0 auto;
             padding: 20px;
-            background-color: #f0f8ff;
+            background-color: #f5f5f5;
         }
         .container {
             background: white;
@@ -19,13 +19,13 @@
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
         h1 {
-            color: #ff9800;
+            color: #d32f2f;
             text-align: center;
         }
-        .firebase-status {
+        .status {
             padding: 15px;
-            background-color: #fff3e0;
-            border: 1px solid #ff9800;
+            background-color: #e8f5e8;
+            border: 1px solid #4caf50;
             border-radius: 5px;
             margin: 20px 0;
         }
@@ -46,7 +46,7 @@
             margin-bottom: 10px;
         }
         .vote-btn {
-            background-color: #ff9800;
+            background-color: #d32f2f;
             color: white;
             border: none;
             padding: 10px 20px;
@@ -55,32 +55,18 @@
             font-size: 16px;
         }
         .vote-btn:hover {
-            background-color: #f57c00;
-        }
-        .firebase-info {
-            background-color: #e3f2fd;
-            padding: 15px;
-            border-radius: 5px;
-            margin: 20px 0;
+            background-color: #b71c1c;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>🔥 PMR Voting System - Firebase Version</h1>
+        <h1>🩺 PMR Voting System</h1>
         <h2>SMA IT Abu Bakar Boarding School</h2>
 
-        <div class="firebase-status">
-            <h3>✅ Firebase Integration Ready</h3>
-            <p>Backend server with Firebase support is running on port 8001</p>
-        </div>
-
-        <div class="firebase-info">
-            <h4>🔧 Firebase Configuration:</h4>
-            <p>• Firestore for data storage</p>
-            <p>• Real-time vote counting</p>
-            <p>• Authentication system</p>
-            <p>• Cloud functions ready</p>
+        <div class="status">
+            <h3>✅ System Status: Online</h3>
+            <p>Backend server is running successfully on port 8001</p>
         </div>
 
         <h3>Pemilihan Ketua PMR 2024</h3>
@@ -90,35 +76,34 @@
                 <h3>Muhammad Rangga</h3>
                 <p><strong>Visi:</strong></p>
                 <p>Membangun PMR yang lebih aktif dalam pelayanan kesehatan masyarakat dan mengembangkan program-program inovatif untuk meningkatkan kesadaran kesehatan di lingkungan sekolah.</p>
-                <button class="vote-btn" onclick="alert('Firebase voting system akan segera diimplementasikan!')">Vote Rangga</button>
+                <button class="vote-btn" onclick="alert('Voting system akan segera diimplementasikan!')">Vote Rangga</button>
             </div>
 
             <div class="candidate">
                 <h3>Ghazi</h3>
                 <p><strong>Visi:</strong></p>
                 <p>Mewujudkan PMR sebagai organisasi yang profesional dalam bidang kesehatan dengan fokus pada pencegahan penyakit dan promosi gaya hidup sehat di kalangan siswa.</p>
-                <button class="vote-btn" onclick="alert('Firebase voting system akan segera diimplementasikan!')">Vote Ghazi</button>
+                <button class="vote-btn" onclick="alert('Voting system akan segera diimplementasikan!')">Vote Ghazi</button>
             </div>
         </div>
 
         <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd;">
-            <h4>API Endpoints (Firebase Ready):</h4>
+            <h4>API Endpoints:</h4>
             <ul>
                 <li><code>GET /api/health</code> - Health check</li>
                 <li><code>GET /api/candidates</code> - Get candidates info</li>
                 <li><code>GET /api/vote-info</code> - Get voting information</li>
-                <li><code>POST /api/votes</code> - Submit votes (Firebase)</li>
             </ul>
         </div>
     </div>
 
     <script>
-        // Firebase-ready JavaScript
-        console.log('PMR Voting System - Firebase Version loaded');
+        // Simple JavaScript for basic functionality
+        console.log('PMR Voting System loaded successfully');
 
+        // Add some interactive features
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('DOM loaded - Firebase version ready');
-            console.log('Firebase integration will be implemented soon');
+            console.log('DOM loaded - PMR Voting System ready');
         });
     </script>
 </body>
