@@ -421,6 +421,58 @@ h2 {
     margin-bottom: 0.5rem;
 }
 
+/* Vote History Styles */
+.vote-history {
+    background: #f8f9ff;
+    border: 1px solid #e0e8ff;
+    border-radius: 10px;
+    padding: 1rem;
+    margin-top: 1rem;
+    text-align: center;
+}
+
+.vote-history h4 {
+    color: #333;
+    margin-bottom: 0.5rem;
+    font-size: 1.1rem;
+}
+
+.vote-history p {
+    margin: 0.5rem 0;
+    color: #666;
+}
+
+.vote-history strong {
+    color: #667eea;
+    font-weight: bold;
+}
+
+.vote-history small {
+    color: #999;
+    font-size: 0.9rem;
+    display: block;
+    margin-top: 0.5rem;
+}
+
+/* Delete Vote Button Styles */
+.delete-vote-btn {
+    background: #dc3545;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 10px rgba(220, 53, 69, 0.3);
+}
+
+.delete-vote-btn:hover {
+    background: #c82333;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 15px rgba(220, 53, 69, 0.4);
+}
+
 .candidates-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
