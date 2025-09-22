@@ -1,20 +1,18 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pemilihan Ketua PMR - SMA IT Abu Bakar Boarding School</title>
-    <link rel="stylesheet" href="styles.css">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    
-    <!-- Firebase SDKs -->
+    <title>PMR Voting System - Firebase Version</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Firebase SDK -->
     <script type="module">
-        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-        import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, signInWithEmailAndPassword } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
-        import { getFirestore, doc, setDoc, getDoc, updateDoc, increment, collection, query, where, getDocs, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js';
+        import { getFirestore, collection, getDocs } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js';
+        import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js';
 
-        // Firebase configuration
+        // Your web app's Firebase configuration
         const firebaseConfig = {
             apiKey: "AIzaSyBQtlCxwhIXyKxuW5FRyRqOElCz-2_EPjs",
             authDomain: "redcross-76c90.firebaseapp.com",
@@ -27,213 +25,255 @@
 
         // Initialize Firebase
         const app = initializeApp(firebaseConfig);
-        window.auth = getAuth(app);
-        window.db = getFirestore(app);
-        window.googleProvider = new GoogleAuthProvider();
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+        const provider = new GoogleAuthProvider();
 
-        // Import functions to global scope
-        window.signInWithPopup = signInWithPopup;
-        window.signOut = signOut;
-        window.onAuthStateChanged = onAuthStateChanged;
-        window.signInWithEmailAndPassword = signInWithEmailAndPassword;
-        window.doc = doc;
-        window.setDoc = setDoc;
-        window.getDoc = getDoc;
-        window.updateDoc = updateDoc;
-        window.increment = increment;
-        window.collection = collection;
-        window.query = query;
-        window.where = where;
-        window.getDocs = getDocs;
-        window.serverTimestamp = serverTimestamp;
+        // Make Firebase services available globally
+        window.db = db;
+        window.auth = auth;
+        window.provider = provider;
+
+        // PMR Voting System JavaScript with Firebase Authentication
+        document.addEventListener('DOMContentLoaded', function() {
+            const candidatesContainer = document.getElementById('candidatesContainer');
+            const voteBtn = document.getElementById('voteBtn');
+            const googleSignInBtn = document.getElementById('googleSignInBtn');
+            const signOutBtn = document.getElementById('signOutBtn');
+            const authSection = document.getElementById('authSection');
+            const votingSection = document.getElementById('votingSection');
+            const userInfo = document.getElementById('userInfo');
+
+            // Sample candidate data
+            const candidates = [
+                {
+                    id: 'rangga',
+                    name: 'Muhammad Rangga',
+                    position: 'Calon Ketua PMR',
+                    vision: 'Membangun PMR yang lebih aktif dalam pelayanan kesehatan masyarakat dan mengembangkan program-program inovatif untuk meningkatkan kesadaran kesehatan di lingkungan sekolah.',
+                    image: 'https://via.placeholder.com/300x200/667eea/ffffff?text=Rangga'
+                },
+                {
+                    id: 'ghazi',
+                    name: 'Ghazi',
+                    position: 'Calon Ketua PMR',
+                    vision: 'Mewujudkan PMR sebagai organisasi yang profesional dalam bidang kesehatan dengan fokus pada pencegahan penyakit dan promosi gaya hidup sehat di kalangan siswa.',
+                    image: 'https://via.placeholder.com/300x200/764ba2/ffffff?text=Ghazi'
+                }
+            ];
+
+            let selectedCandidate = null;
+            let currentUser = null;
+
+            // Load candidates
+            function loadCandidates() {
+                candidatesContainer.innerHTML = '';
+
+                candidates.forEach(candidate => {
+                    const candidateCard = document.createElement('div');
+                    candidateCard.className = 'candidate-card';
+                    candidateCard.dataset.id = candidate.id;
+
+                    candidateCard.innerHTML = `
+                        <img src="${candidate.image}" alt="${candidate.name}" class="candidate-image">
+                        <div class="candidate-name">${candidate.name}</div>
+                        <div class="candidate-position">${candidate.position}</div>
+                        <div class="candidate-vision">${candidate.vision}</div>
+                    `;
+
+                    candidateCard.addEventListener('click', () => selectCandidate(candidate.id));
+                    candidatesContainer.appendChild(candidateCard);
+                });
+            }
+
+            // Select candidate
+            function selectCandidate(candidateId) {
+                // Remove previous selection
+                document.querySelectorAll('.candidate-card').forEach(card => {
+                    card.classList.remove('selected');
+                });
+
+                // Add selection to clicked card
+                const selectedCard = document.querySelector(`[data-id="${candidateId}"]`);
+                if (selectedCard) {
+                    selectedCard.classList.add('selected');
+                    selectedCandidate = candidateId;
+                    voteBtn.disabled = false;
+                }
+            }
+
+            // Handle voting
+            function handleVote() {
+                if (!selectedCandidate) {
+                    alert('Please select a candidate first!');
+                    return;
+                }
+
+                const candidate = candidates.find(c => c.id === selectedCandidate);
+                const confirmVote = confirm(`Are you sure you want to vote for ${candidate.name}?`);
+
+                if (confirmVote) {
+                    // Simulate voting process
+                    voteBtn.textContent = 'Voting...';
+                    voteBtn.disabled = true;
+
+                    setTimeout(() => {
+                        alert(`Thank you for voting!\nYou voted for: ${candidate.name}`);
+                        voteBtn.textContent = 'Vote Submitted ✓';
+                        voteBtn.style.background = '#4caf50';
+
+                        // Reset after 3 seconds
+                        setTimeout(() => {
+                            voteBtn.textContent = 'Start Voting';
+                            voteBtn.disabled = false;
+                            voteBtn.style.background = '';
+                            selectedCandidate = null;
+                            document.querySelectorAll('.candidate-card').forEach(card => {
+                                card.classList.remove('selected');
+                            });
+                        }, 3000);
+                    }, 1000);
+                }
+            }
+
+            // Google Sign In Function
+            async function signInWithGoogle() {
+                try {
+                    googleSignInBtn.textContent = 'Signing in...';
+                    googleSignInBtn.disabled = true;
+
+                    const result = await signInWithPopup(auth, provider);
+                    currentUser = result.user;
+                    console.log('User signed in:', currentUser);
+                } catch (error) {
+                    console.error('Error signing in:', error);
+                    alert('Error signing in: ' + error.message);
+                } finally {
+                    googleSignInBtn.textContent = 'Sign in with Google';
+                    googleSignInBtn.disabled = false;
+                }
+            }
+
+            // Sign Out Function
+            async function signOutUser() {
+                try {
+                    await signOut(auth);
+                    currentUser = null;
+                    selectedCandidate = null;
+                    document.querySelectorAll('.candidate-card').forEach(card => {
+                        card.classList.remove('selected');
+                    });
+                    voteBtn.textContent = 'Start Voting';
+                    voteBtn.disabled = false;
+                    voteBtn.style.background = '';
+                } catch (error) {
+                    console.error('Error signing out:', error);
+                    alert('Error signing out: ' + error.message);
+                }
+            }
+
+            // Update UI based on authentication state
+            function updateUI(user) {
+                if (user) {
+                    // User is signed in
+                    authSection.style.display = 'none';
+                    votingSection.style.display = 'block';
+
+                    userInfo.innerHTML = `
+                        <div class="user-profile">
+                            <img src="${user.photoURL || 'https://via.placeholder.com/40x40/667eea/ffffff?text=' + user.displayName.charAt(0)}" alt="Profile" class="user-avatar">
+                            <div class="user-details">
+                                <div class="user-name">${user.displayName}</div>
+                                <div class="user-email">${user.email}</div>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    // User is signed out
+                    authSection.style.display = 'block';
+                    votingSection.style.display = 'none';
+                    userInfo.innerHTML = '';
+                }
+            }
+
+            // Authentication state observer
+            onAuthStateChanged(auth, (user) => {
+                currentUser = user;
+                updateUI(user);
+            });
+
+            // Event Listeners
+            googleSignInBtn.addEventListener('click', signInWithGoogle);
+            signOutBtn.addEventListener('click', signOutUser);
+
+            // Initialize
+            loadCandidates();
+            voteBtn.addEventListener('click', handleVote);
+
+            // Add some interactive effects
+            document.querySelectorAll('.candidate-card').forEach(card => {
+                card.addEventListener('mouseenter', function() {
+                    if (!this.classList.contains('selected')) {
+                        this.style.transform = 'translateY(-5px)';
+                        this.style.boxShadow = '0 15px 35px rgba(0, 0, 0, 0.1)';
+                    }
+                });
+
+                card.addEventListener('mouseleave', function() {
+                    if (!this.classList.contains('selected')) {
+                        this.style.transform = '';
+                        this.style.boxShadow = '';
+                    }
+                });
+            });
+        });
     </script>
 </head>
 <body>
-    <div id="loadingScreen" class="loading-screen">
-        <div class="loader">
-            <div class="red-cross">
-                <div class="cross-vertical"></div>
-                <div class="cross-horizontal"></div>
-            </div>
-            <p>Memuat Sistem Voting PMR...</p>
-        </div>
-    </div>
+    <div id="app">
+        <header>
+            <h1>PMR Voting System</h1>
+            <p>SMA IT Abu Bakar Boarding School - Firebase Version</p>
+        </header>
 
-    <!-- Header -->
-    <header class="header">
-        <div class="container">
-            <div class="header-content">
-                <div class="logo-section">
-                    <div class="pmr-logo">
-                        <div class="red-cross-logo">
-                            <div class="cross-vertical"></div>
-                            <div class="cross-horizontal"></div>
-                        </div>
-                    </div>
-                    <div class="header-text">
-                        <h1>Pemilihan Ketua PMR</h1>
-                        <p>SMA IT Abu Bakar Boarding School Kulon Progo</p>
-                    </div>
-                </div>
-                <div class="user-section" id="userSection" style="display: none;">
-                    <div class="user-info" id="userInfo"></div>
-                    <button class="logout-btn" id="logoutBtn">
-                        <i class="fas fa-sign-out-alt"></i> Keluar
-                    </button>
-                </div>
-            </div>
-        </div>
-    </header>
-
-    <!-- Login Section -->
-    <section id="loginSection" class="login-section">
-        <div class="container">
-            <div class="login-card">
-                <div class="login-header">
-                    <div class="pmr-logo">
-                        <div class="red-cross-logo">
-                            <div class="cross-vertical"></div>
-                            <div class="cross-horizontal"></div>
-                        </div>
-                    </div>
-                    <h2>Masuk ke Sistem Voting</h2>
-                    <p>Gunakan akun Google Anda untuk berpartisipasi dalam pemilihan</p>
-                </div>
-                
-                <div class="login-methods">
-                    <button class="google-login-btn" id="googleLoginBtn">
-                        <i class="fab fa-google"></i>
-                        Masuk dengan Google
-                    </button>
-                    
-                    <div class="divider">
-                        <span>atau</span>
-                    </div>
-                    
-                    <div class="admin-login">
-                        <h3>Login Admin</h3>
-                        <input type="email" id="adminEmail" placeholder="Email Admin" class="admin-input">
-                        <input type="password" id="adminPassword" placeholder="Password Admin" class="admin-input">
-                        <button class="admin-login-btn" id="adminLoginBtn">
-                            <i class="fas fa-user-shield"></i>
-                            Masuk sebagai Admin
+        <main>
+            <div class="container">
+                <!-- Authentication Section -->
+                <div id="authSection" class="auth-section">
+                    <div class="auth-container">
+                        <h2>Login Required</h2>
+                        <p>Please sign in with your Google account to vote</p>
+                        <button id="googleSignInBtn" class="google-signin-btn">
+                            <img src="https://developers.google.com/identity/images/g-logo.png" alt="Google" class="google-icon">
+                            Sign in with Google
                         </button>
                     </div>
                 </div>
-                
-                <div class="message" id="loginMessage"></div>
-            </div>
-        </div>
-    </section>
 
-    <!-- Voting Section -->
-    <section id="votingSection" class="voting-section" style="display: none;">
-        <div class="container">
-            <div class="voting-header">
-                <h2>Pilih Calon Ketua PMR Periode 2024-2025</h2>
-                <p>Pilihlah satu kandidat yang menurut Anda paling cocok memimpin PMR</p>
-            </div>
+                <!-- Voting Section (hidden until authenticated) -->
+                <div id="votingSection" class="voting-section-hidden">
+                    <h2>Election for PMR Chairman 2024</h2>
+                    <p class="firebase-status">Firebase integration ready</p>
 
-            <div class="candidates-container" id="candidatesContainer">
-                <!-- Candidates will be loaded here -->
-            </div>
-
-            <div class="voting-actions">
-                <button class="vote-btn" id="voteBtn" disabled>
-                    <i class="fas fa-vote-yea"></i>
-                    Kirim Suara
-                </button>
-            </div>
-
-            <div class="message" id="votingMessage"></div>
-        </div>
-    </section>
-
-    <!-- Admin Dashboard -->
-    <section id="adminSection" class="admin-section" style="display: none;">
-        <div class="container">
-            <div class="admin-header">
-                <h2><i class="fas fa-chart-bar"></i> Dashboard Admin</h2>
-                <p>Monitoring hasil pemilihan secara real-time</p>
-            </div>
-
-            <div class="admin-stats">
-                <div class="stat-card">
-                    <div class="stat-icon">
-                        <i class="fas fa-users"></i>
+                    <div class="user-info" id="userInfo">
+                        <!-- User info will be displayed here -->
                     </div>
-                    <div class="stat-info">
-                        <h3 id="totalVoters">0</h3>
-                        <p>Total Pemilih</p>
+
+                    <div class="candidates-grid" id="candidatesContainer">
+                        <!-- Candidates will be loaded from Firebase -->
                     </div>
-                </div>
-                
-                <div class="stat-card">
-                    <div class="stat-icon">
-                        <i class="fas fa-vote-yea"></i>
-                    </div>
-                    <div class="stat-info">
-                        <h3 id="totalVotes">0</h3>
-                        <p>Total Suara</p>
-                    </div>
-                </div>
-                
-                <div class="stat-card">
-                    <div class="stat-icon">
-                        <i class="fas fa-percentage"></i>
-                    </div>
-                    <div class="stat-info">
-                        <h3 id="participationRate">0%</h3>
-                        <p>Partisipasi</p>
+
+                    <div class="voting-controls">
+                        <button id="voteBtn" class="vote-button">Start Voting</button>
+                        <button id="signOutBtn" class="signout-button">Sign Out</button>
                     </div>
                 </div>
             </div>
+        </main>
 
-            <div class="results-container" id="resultsContainer">
-                <!-- Results will be loaded here -->
-            </div>
-
-            <div class="admin-actions">
-                <button class="admin-btn" id="refreshBtn">
-                    <i class="fas fa-sync-alt"></i>
-                    Refresh Data
-                </button>
-                <button class="admin-btn secondary" id="exportBtn">
-                    <i class="fas fa-download"></i>
-                    Export Data
-                </button>
-            </div>
-        </div>
-    </section>
-
-    <!-- Success/Thank You Section -->
-    <section id="thankYouSection" class="thank-you-section" style="display: none;">
-        <div class="container">
-            <div class="thank-you-card">
-                <div class="success-icon">
-                    <i class="fas fa-check-circle"></i>
-                </div>
-                <h2>Terima Kasih!</h2>
-                <p>Suara Anda telah berhasil tercatat dalam sistem</p>
-                <div class="vote-details" id="voteDetails"></div>
-                <div class="thank-you-actions">
-                    <button class="secondary-btn" id="backToResultsBtn">
-                        <i class="fas fa-chart-bar"></i>
-                        Lihat Hasil Sementara
-                    </button>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <footer class="footer">
-        <div class="container">
-            <p>&copy; 2024 SMA IT Abu Bakar Boarding School Kulon Progo - Sistem Voting PMR</p>
-            <p>Dibuat oleh tim media PMR 
-        </div>
-    </footer>
-
-    <script src="script.js"></script>
+        <footer>
+            <p>&copy; 2024 SMA IT Abu Bakar Boarding School - Firebase Version</p>
+        </footer>
+    </div>
 </body>
 </html>
-
