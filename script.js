@@ -1,236 +1,117 @@
-// Voting System for Ketua PMR SMA IT ABU BAKAR BOARDING SCHOOL
-class VotingSystem {
-    constructor() {
-        this.currentUser = null;
-        this.selectedCandidate = null;
-        this.candidates = [
-            { id: 1, name: "Ahmad Rizki", class: "XII IPA 1", vision: "Membangun PMR yang lebih aktif dan peduli terhadap kesehatan masyarakat" },
-            { id: 2, name: "Siti Nurhaliza", class: "XII IPS 1", vision: "Mengembangkan program kesehatan preventif dan edukasi di sekolah" },
-            { id: 3, name: "Budi Santoso", class: "XII IPA 2", vision: "Meningkatkan kerjasama PMR dengan organisasi kesehatan eksternal" }
-        ];
+// PMR Voting System JavaScript
+document.addEventListener('DOMContentLoaded', function() {
+    const candidatesContainer = document.getElementById('candidatesContainer');
+    const voteBtn = document.getElementById('voteBtn');
 
-        this.init();
-    }
-
-    init() {
-        this.bindEvents();
-        this.showAuthSection();
-    }
-
-    bindEvents() {
-        // Auth events
-        document.getElementById('loginBtn').addEventListener('click', () => this.handleLogin());
-        document.getElementById('registerBtn').addEventListener('click', () => this.handleRegister());
-        document.getElementById('logoutBtn').addEventListener('click', () => this.handleLogout());
-
-        // Enter key for inputs
-        document.getElementById('email').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') this.handleLogin();
-        });
-        document.getElementById('password').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') this.handleLogin();
-        });
-    }
-
-    showAuthSection() {
-        document.getElementById('authSection').classList.remove('hidden');
-        document.getElementById('votingSection').classList.add('hidden');
-    }
-
-    showVotingSection() {
-        document.getElementById('authSection').classList.add('hidden');
-        document.getElementById('votingSection').classList.remove('hidden');
-        this.displayCandidates();
-    }
-
-    handleLogin() {
-        const email = document.getElementById('email').value.trim();
-        const password = document.getElementById('password').value.trim();
-
-        if (!email || !password) {
-            this.showMessage('authMessage', 'Mohon isi email dan password', 'error');
-            return;
+    // Sample candidate data
+    const candidates = [
+        {
+            id: 'rangga',
+            name: 'Muhammad Rangga',
+            position: 'Calon Ketua PMR',
+            vision: 'Membangun PMR yang lebih aktif dalam pelayanan kesehatan masyarakat dan mengembangkan program-program inovatif untuk meningkatkan kesadaran kesehatan di lingkungan sekolah.',
+            image: 'https://via.placeholder.com/300x200/667eea/ffffff?text=Rangga'
+        },
+        {
+            id: 'ghazi',
+            name: 'Ghazi',
+            position: 'Calon Ketua PMR',
+            vision: 'Mewujudkan PMR sebagai organisasi yang profesional dalam bidang kesehatan dengan fokus pada pencegahan penyakit dan promosi gaya hidup sehat di kalangan siswa.',
+            image: 'https://via.placeholder.com/300x200/764ba2/ffffff?text=Ghazi'
         }
+    ];
 
-        // Simple validation for demo purposes
-        if (email.includes('@') && password.length >= 6) {
-            this.currentUser = {
-                email: email,
-                name: email.split('@')[0],
-                hasVoted: localStorage.getItem(`voted_${email}`) === 'true'
-            };
-            this.showMessage('authMessage', `Selamat datang, ${this.currentUser.name}!`, 'success');
-            setTimeout(() => {
-                this.showVotingSection();
-            }, 1000);
-        } else {
-            this.showMessage('authMessage', 'Email atau password tidak valid', 'error');
-        }
-    }
+    let selectedCandidate = null;
 
-    handleRegister() {
-        const email = document.getElementById('email').value.trim();
-        const password = document.getElementById('password').value.trim();
+    // Load candidates
+    function loadCandidates() {
+        candidatesContainer.innerHTML = '';
 
-        if (!email || !password) {
-            this.showMessage('authMessage', 'Mohon isi email dan password', 'error');
-            return;
-        }
+        candidates.forEach(candidate => {
+            const candidateCard = document.createElement('div');
+            candidateCard.className = 'candidate-card';
+            candidateCard.dataset.id = candidate.id;
 
-        if (password.length < 6) {
-            this.showMessage('authMessage', 'Password minimal 6 karakter', 'error');
-            return;
-        }
-
-        // Simple registration for demo purposes
-        this.currentUser = {
-            email: email,
-            name: email.split('@')[0],
-            hasVoted: false
-        };
-
-        this.showMessage('authMessage', 'Registrasi berhasil! Silakan login.', 'success');
-    }
-
-    handleLogout() {
-        this.currentUser = null;
-        this.selectedCandidate = null;
-        document.getElementById('email').value = '';
-        document.getElementById('password').value = '';
-        this.showAuthSection();
-        this.showMessage('authMessage', 'Anda telah logout', 'success');
-    }
-
-    displayCandidates() {
-        const candidatesList = document.getElementById('candidatesList');
-        candidatesList.innerHTML = '';
-
-        this.candidates.forEach(candidate => {
-            const candidateDiv = document.createElement('div');
-            candidateDiv.className = 'candidate';
-            candidateDiv.dataset.candidateId = candidate.id;
-            candidateDiv.innerHTML = `
-                <h3>${candidate.name}</h3>
-                <p><strong>Kelas:</strong> ${candidate.class}</p>
-                <p><strong>Visi:</strong> ${candidate.vision}</p>
+            candidateCard.innerHTML = `
+                <img src="${candidate.image}" alt="${candidate.name}" class="candidate-image">
+                <div class="candidate-name">${candidate.name}</div>
+                <div class="candidate-position">${candidate.position}</div>
+                <div class="candidate-vision">${candidate.vision}</div>
             `;
 
-            candidateDiv.addEventListener('click', () => this.selectCandidate(candidate.id));
-            candidatesList.appendChild(candidateDiv);
+            candidateCard.addEventListener('click', () => selectCandidate(candidate.id));
+            candidatesContainer.appendChild(candidateCard);
         });
     }
 
-    selectCandidate(candidateId) {
-        if (this.currentUser && this.currentUser.hasVoted) {
-            this.showMessage('voteMessage', 'Anda sudah memberikan suara sebelumnya', 'error');
-            return;
-        }
-
+    // Select candidate
+    function selectCandidate(candidateId) {
         // Remove previous selection
-        document.querySelectorAll('.candidate').forEach(c => c.classList.remove('selected'));
-
-        // Select new candidate
-        const selectedElement = document.querySelector(`[data-candidate-id="${candidateId}"]`);
-        selectedElement.classList.add('selected');
-        this.selectedCandidate = candidateId;
-
-        this.showMessage('voteMessage', 'Kandidat dipilih. Klik tombol "Vote" untuk mengkonfirmasi.', 'success');
-    }
-
-    submitVote() {
-        if (!this.selectedCandidate) {
-            this.showMessage('voteMessage', 'Pilih kandidat terlebih dahulu', 'error');
-            return;
-        }
-
-        if (this.currentUser && this.currentUser.hasVoted) {
-            this.showMessage('voteMessage', 'Anda sudah memberikan suara sebelumnya', 'error');
-            return;
-        }
-
-        // Record vote
-        localStorage.setItem(`voted_${this.currentUser.email}`, 'true');
-        this.currentUser.hasVoted = true;
-
-        const candidate = this.candidates.find(c => c.id === this.selectedCandidate);
-        this.showMessage('voteMessage', `Suara Anda untuk ${candidate.name} telah direkam! Terima kasih atas partisipasi Anda.`, 'success');
-
-        // Disable further voting
-        document.querySelectorAll('.candidate').forEach(c => {
-            c.style.pointerEvents = 'none';
-            c.style.opacity = '0.6';
+        document.querySelectorAll('.candidate-card').forEach(card => {
+            card.classList.remove('selected');
         });
+
+        // Add selection to clicked card
+        const selectedCard = document.querySelector(`[data-id="${candidateId}"]`);
+        if (selectedCard) {
+            selectedCard.classList.add('selected');
+            selectedCandidate = candidateId;
+            voteBtn.disabled = false;
+        }
     }
 
-    showMessage(elementId, message, type) {
-        const element = document.getElementById(elementId);
-        element.textContent = message;
-        element.className = type === 'error' ? 'error-message' : 'success-message';
+    // Handle voting
+    function handleVote() {
+        if (!selectedCandidate) {
+            alert('Please select a candidate first!');
+            return;
+        }
 
-        // Clear message after 5 seconds
-        setTimeout(() => {
-            element.textContent = '';
-            element.className = '';
-        }, 5000);
+        const candidate = candidates.find(c => c.id === selectedCandidate);
+        const confirmVote = confirm(`Are you sure you want to vote for ${candidate.name}?`);
+
+        if (confirmVote) {
+            // Simulate voting process
+            voteBtn.textContent = 'Voting...';
+            voteBtn.disabled = true;
+
+            setTimeout(() => {
+                alert(`Thank you for voting!\nYou voted for: ${candidate.name}`);
+                voteBtn.textContent = 'Vote Submitted ✓';
+                voteBtn.style.background = '#4caf50';
+
+                // Reset after 3 seconds
+                setTimeout(() => {
+                    voteBtn.textContent = 'Start Voting';
+                    voteBtn.disabled = false;
+                    voteBtn.style.background = '';
+                    selectedCandidate = null;
+                    document.querySelectorAll('.candidate-card').forEach(card => {
+                        card.classList.remove('selected');
+                    });
+                }, 3000);
+            }, 1000);
+        }
     }
-}
 
-// Add CSS for message types
-const style = document.createElement('style');
-style.textContent = `
-    .error-message {
-        background: #fed7d7;
-        color: #c53030;
-        border: 1px solid #feb2b2;
-        text-align: center;
-        padding: 12px;
-        border-radius: 8px;
-        margin: 1rem 0;
-        font-weight: 500;
-    }
+    // Initialize
+    loadCandidates();
+    voteBtn.addEventListener('click', handleVote);
 
-    .success-message {
-        background: #c6f6d5;
-        color: #22543d;
-        border: 1px solid #9ae6b4;
-        text-align: center;
-        padding: 12px;
-        border-radius: 8px;
-        margin: 1rem 0;
-        font-weight: 500;
-    }
-`;
-document.head.appendChild(style);
+    // Add some interactive effects
+    document.querySelectorAll('.candidate-card').forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            if (!this.classList.contains('selected')) {
+                this.style.transform = 'translateY(-5px)';
+                this.style.boxShadow = '0 15px 35px rgba(0, 0, 0, 0.1)';
+            }
+        });
 
-// Add vote button to voting section
-document.addEventListener('DOMContentLoaded', function() {
-    const votingSection = document.getElementById('votingSection');
-    const voteButton = document.createElement('button');
-    voteButton.id = 'voteBtn';
-    voteButton.textContent = 'Vote';
-    voteButton.style.cssText = `
-        background: linear-gradient(45deg, #48bb78, #38a169);
-        color: white;
-        padding: 12px 24px;
-        margin: 1rem auto;
-        border: none;
-        border-radius: 8px;
-        font-size: 16px;
-        font-weight: 600;
-        cursor: pointer;
-        display: block;
-        transition: all 0.3s ease;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    `;
-
-    voteButton.addEventListener('click', () => {
-        const votingSystem = new VotingSystem();
-        votingSystem.submitVote();
+        card.addEventListener('mouseleave', function() {
+            if (!this.classList.contains('selected')) {
+                this.style.transform = '';
+                this.style.boxShadow = '';
+            }
+        });
     });
-
-    // Insert vote button before the message
-    votingSection.insertBefore(voteButton, document.getElementById('voteMessage'));
-
-    // Initialize the voting system
-    new VotingSystem();
 });
