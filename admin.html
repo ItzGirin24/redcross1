@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PMR Voting Admin Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Firebase SDK -->
+    <script type="module">
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js';
+        import { getFirestore, collection, getDocs, query, orderBy } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js';
+
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBQtlCxwhIXyKxuW5FRyRqOElCz-2_EPjs",
+            authDomain: "redcross-76c90.firebaseapp.com",
+            projectId: "redcross-76c90",
+            storageBucket: "redcross-76c90.firebasestorage.app",
+            messagingSenderId: "720435310423",
+            appId: "1:720435310423:web:058f8f14743135da62d812",
+            measurementId: "G-1N1LDV3R95"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // Admin Dashboard JavaScript
+        document.addEventListener('DOMContentLoaded', async function() {
+            const resultsContainer = document.getElementById('resultsContainer');
+            const refreshBtn = document.getElementById('refreshBtn');
+            const totalVotesEl = document.getElementById('totalVotes');
+
+            // Load and display voting results
+            async function loadVotingResults() {
+                try {
+                    resultsContainer.innerHTML = '<p>Loading voting results...</p>';
+
+                    // Get all votes from Firestore
+                    const votesQuery = query(collection(db, 'votes'), orderBy('timestamp', 'desc'));
+                    const votesSnapshot = await getDocs(votesQuery);
+
+                    const votes = [];
+                    votesSnapshot.forEach((doc) => {
+                        votes.push({
+                            id: doc.id,
+                            ...doc.data()
+                        });
+                    });
+
+                    // Calculate results
+                    const totalVotes = votes.length;
+                    const candidateResults = {};
+                    const voterList = [];
+
+                    votes.forEach(vote => {
+                        // Count votes per candidate
+                        if (candidateResults[vote.candidateName]) {
+                            candidateResults[vote.candidateName]++;
+                        } else {
+                            candidateResults[vote.candidateName] = 1;
+                        }
+
+                        // Add to voter list
+                        voterList.push({
+                            name: vote.userName,
+                            email: vote.userEmail,
+                            candidate: vote.candidateName,
+                            timestamp: vote.timestamp.toDate().toLocaleString()
+                        });
+                    });
+
+                    // Display results
+                    displayResults(totalVotes, candidateResults, voterList);
+
+                } catch (error) {
+                    console.error('Error loading voting results:', error);
+                    resultsContainer.innerHTML = `
+                        <div class="error-message">
+                            <h3>Error Loading Results</h3>
+                            <p>${error.message}</p>
+                        </div>
+                    `;
+                }
+            }
+
+            // Display results function
+            function displayResults(totalVotes, candidateResults, voterList) {
+                totalVotesEl.textContent = totalVotes;
+
+                let resultsHTML = `
+                    <div class="results-summary">
+                        <h3>Voting Results Summary</h3>
+                        <div class="total-votes">
+                            <strong>Total Votes Cast: ${totalVotes}</strong>
+                        </div>
+                    </div>
+                `;
+
+                // Candidate results
+                resultsHTML += '<div class="candidate-results">';
+                resultsHTML += '<h3>Candidate Results</h3>';
+
+                Object.keys(candidateResults).forEach(candidate => {
+                    const voteCount = candidateResults[candidate];
+                    const percentage = totalVotes > 0 ? ((voteCount / totalVotes) * 100).toFixed(1) : 0;
+
+                    resultsHTML += `
+                        <div class="candidate-result">
+                            <div class="candidate-info">
+                                <h4>${candidate}</h4>
+                                <div class="vote-count">${voteCount} votes (${percentage}%)</div>
+                            </div>
+                            <div class="vote-bar">
+                                <div class="vote-bar-fill" style="width: ${percentage}%"></div>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                resultsHTML += '</div>';
+
+                // Voter list
+                resultsHTML += '<div class="voter-list">';
+                resultsHTML += '<h3>Detailed Voter List</h3>';
+                resultsHTML += '<div class="voter-table-container">';
+                resultsHTML += '<table class="voter-table">';
+                resultsHTML += '<thead><tr><th>Voter Name</th><th>Email</th><th>Voted For</th><th>Timestamp</th></tr></thead>';
+                resultsHTML += '<tbody>';
+
+                voterList.forEach(voter => {
+                    resultsHTML += `
+                        <tr>
+                            <td>${voter.name}</td>
+                            <td>${voter.email}</td>
+                            <td>${voter.candidate}</td>
+                            <td>${voter.timestamp}</td>
+                        </tr>
+                    `;
+                });
+
+                resultsHTML += '</tbody></table>';
+                resultsHTML += '</div>';
+                resultsHTML += '</div>';
+
+                resultsContainer.innerHTML = resultsHTML;
+            }
+
+            // Refresh button event listener
+            refreshBtn.addEventListener('click', loadVotingResults);
+
+            // Load initial results
+            loadVotingResults();
+
+            // Auto-refresh every 30 seconds
+            setInterval(loadVotingResults, 30000);
+        });
+    </script>
+</head>
+<body>
+    <div id="app">
+        <header>
+            <h1>PMR Voting Admin Dashboard</h1>
+            <p>SMA IT Abu Bakar Boarding School - Real-time Vote Monitoring</p>
+        </header>
+
+        <main>
+            <div class="container">
+                <div class="admin-controls">
+                    <button id="refreshBtn" class="refresh-button">🔄 Refresh Results</button>
+                    <div class="last-updated">
+                        <span>Last updated: <span id="lastUpdated">Loading...</span></span>
+                    </div>
+                </div>
+
+                <div class="results-container" id="resultsContainer">
+                    <!-- Results will be loaded here -->
+                </div>
+
+                <div class="stats-overview">
+                    <div class="stat-card">
+                        <h3>Total Votes</h3>
+                        <div id="totalVotes" class="stat-number">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Status</h3>
+                        <div class="status-indicator active">🟢 Live</div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <footer>
+            <p>&copy; 2024 SMA IT Abu Bakar Boarding School - Admin Dashboard</p>
+        </footer>
+    </div>
+</body>
+</html>
