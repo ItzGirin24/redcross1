@@ -107,16 +107,16 @@
 
                 let resultsHTML = `
                     <div class="results-summary">
-                        <h3>Voting Results Summary</h3>
+                        <h3>HASIL</h3>
                         <div class="total-votes">
-                            <strong>Total Votes Cast: ${totalVotes}</strong>
+                            <strong>Total Pemilih: ${totalVotes}</strong>
                         </div>
                     </div>
                 `;
 
                 // Candidate results
                 resultsHTML += '<div class="candidate-results">';
-                resultsHTML += '<h3>Candidate Results</h3>';
+                resultsHTML += '<h3>Hasil Pemilihan</h3>';
 
                 Object.keys(candidateResults).forEach(candidate => {
                     const voteCount = candidateResults[candidate];
@@ -142,7 +142,7 @@
                 resultsHTML += '<h3>Detailed Voter List</h3>';
                 resultsHTML += '<div class="voter-table-container">';
                 resultsHTML += '<table class="voter-table">';
-                resultsHTML += '<thead><tr><th>Voter Name</th><th>Email</th><th>Memilih</th><th>Timestamp</th><th>Actions</th></tr></thead>';
+                resultsHTML += '<thead><tr><th>Nama</th><th>Email</th><th>Memilih</th><th>Waktu</th><th>Hapus?</th></tr></thead>';
                 resultsHTML += '<tbody>';
 
                 voterList.forEach(voter => {
