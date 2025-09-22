@@ -1,36 +1,237 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PMR Voting System</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Pemilihan Ketua PMR - SMA IT Abu Bakar Boarding School</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Firebase SDKs -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, signInWithEmailAndPassword } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+        import { getFirestore, doc, setDoc, getDoc, updateDoc, increment, collection, query, where, getDocs, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBQtlCxwhIXyKxuW5FRyRqOElCz-2_EPjs",
+            authDomain: "redcross-76c90.firebaseapp.com",
+            projectId: "redcross-76c90",
+            storageBucket: "redcross-76c90.firebasestorage.app",
+            messagingSenderId: "720435310423",
+            appId: "1:720435310423:web:058f8f14743135da62d812",
+            measurementId: "G-1N1LDV3R95"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        window.auth = getAuth(app);
+        window.db = getFirestore(app);
+        window.googleProvider = new GoogleAuthProvider();
+
+        // Import functions to global scope
+        window.signInWithPopup = signInWithPopup;
+        window.signOut = signOut;
+        window.onAuthStateChanged = onAuthStateChanged;
+        window.signInWithEmailAndPassword = signInWithEmailAndPassword;
+        window.doc = doc;
+        window.setDoc = setDoc;
+        window.getDoc = getDoc;
+        window.updateDoc = updateDoc;
+        window.increment = increment;
+        window.collection = collection;
+        window.query = query;
+        window.where = where;
+        window.getDocs = getDocs;
+        window.serverTimestamp = serverTimestamp;
+    </script>
 </head>
 <body>
-    <div id="app">
-        <header>
-            <h1>PMR Voting System</h1>
-            <p>SMA IT Abu Bakar Boarding School</p>
-        </header>
+    <div id="loadingScreen" class="loading-screen">
+        <div class="loader">
+            <div class="red-cross">
+                <div class="cross-vertical"></div>
+                <div class="cross-horizontal"></div>
+            </div>
+            <p>Memuat Sistem Voting PMR...</p>
+        </div>
+    </div>
 
-        <main>
-            <div class="container">
-                <h2>Election for PMR Chairman 2024</h2>
-
-                <div class="candidates-grid" id="candidatesContainer">
-                    <!-- Candidates will be loaded here -->
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo-section">
+                    <div class="pmr-logo">
+                        <div class="red-cross-logo">
+                            <div class="cross-vertical"></div>
+                            <div class="cross-horizontal"></div>
+                        </div>
+                    </div>
+                    <div class="header-text">
+                        <h1>Pemilihan Ketua PMR</h1>
+                        <p>SMA IT Abu Bakar Boarding School Kulon Progo</p>
+                    </div>
                 </div>
-
-                <div class="voting-section">
-                    <button id="voteBtn" class="vote-button">Start Voting</button>
+                <div class="user-section" id="userSection" style="display: none;">
+                    <div class="user-info" id="userInfo"></div>
+                    <button class="logout-btn" id="logoutBtn">
+                        <i class="fas fa-sign-out-alt"></i> Keluar
+                    </button>
                 </div>
             </div>
-        </main>
+        </div>
+    </header>
 
-        <footer>
-            <p>&copy; 2024 SMA IT Abu Bakar Boarding School</p>
-        </footer>
-    </div>
+    <!-- Login Section -->
+    <section id="loginSection" class="login-section">
+        <div class="container">
+            <div class="login-card">
+                <div class="login-header">
+                    <div class="pmr-logo">
+                        <div class="red-cross-logo">
+                            <div class="cross-vertical"></div>
+                            <div class="cross-horizontal"></div>
+                        </div>
+                    </div>
+                    <h2>Masuk ke Sistem Voting</h2>
+                    <p>Gunakan akun Google Anda untuk berpartisipasi dalam pemilihan</p>
+                </div>
+                
+                <div class="login-methods">
+                    <button class="google-login-btn" id="googleLoginBtn">
+                        <i class="fab fa-google"></i>
+                        Masuk dengan Google
+                    </button>
+                    
+                    <div class="divider">
+                        <span>atau</span>
+                    </div>
+                    
+                    <div class="admin-login">
+                        <h3>Login Admin</h3>
+                        <input type="email" id="adminEmail" placeholder="Email Admin" class="admin-input">
+                        <input type="password" id="adminPassword" placeholder="Password Admin" class="admin-input">
+                        <button class="admin-login-btn" id="adminLoginBtn">
+                            <i class="fas fa-user-shield"></i>
+                            Masuk sebagai Admin
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="message" id="loginMessage"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Voting Section -->
+    <section id="votingSection" class="voting-section" style="display: none;">
+        <div class="container">
+            <div class="voting-header">
+                <h2>Pilih Calon Ketua PMR Periode 2024-2025</h2>
+                <p>Pilihlah satu kandidat yang menurut Anda paling cocok memimpin PMR</p>
+            </div>
+
+            <div class="candidates-container" id="candidatesContainer">
+                <!-- Candidates will be loaded here -->
+            </div>
+
+            <div class="voting-actions">
+                <button class="vote-btn" id="voteBtn" disabled>
+                    <i class="fas fa-vote-yea"></i>
+                    Kirim Suara
+                </button>
+            </div>
+
+            <div class="message" id="votingMessage"></div>
+        </div>
+    </section>
+
+    <!-- Admin Dashboard -->
+    <section id="adminSection" class="admin-section" style="display: none;">
+        <div class="container">
+            <div class="admin-header">
+                <h2><i class="fas fa-chart-bar"></i> Dashboard Admin</h2>
+                <p>Monitoring hasil pemilihan secara real-time</p>
+            </div>
+
+            <div class="admin-stats">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="totalVoters">0</h3>
+                        <p>Total Pemilih</p>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-vote-yea"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="totalVotes">0</h3>
+                        <p>Total Suara</p>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-percentage"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="participationRate">0%</h3>
+                        <p>Partisipasi</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="results-container" id="resultsContainer">
+                <!-- Results will be loaded here -->
+            </div>
+
+            <div class="admin-actions">
+                <button class="admin-btn" id="refreshBtn">
+                    <i class="fas fa-sync-alt"></i>
+                    Refresh Data
+                </button>
+                <button class="admin-btn secondary" id="exportBtn">
+                    <i class="fas fa-download"></i>
+                    Export Data
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Success/Thank You Section -->
+    <section id="thankYouSection" class="thank-you-section" style="display: none;">
+        <div class="container">
+            <div class="thank-you-card">
+                <div class="success-icon">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <h2>Terima Kasih!</h2>
+                <p>Suara Anda telah berhasil tercatat dalam sistem</p>
+                <div class="vote-details" id="voteDetails"></div>
+                <div class="thank-you-actions">
+                    <button class="secondary-btn" id="backToResultsBtn">
+                        <i class="fas fa-chart-bar"></i>
+                        Lihat Hasil Sementara
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2024 SMA IT Abu Bakar Boarding School Kulon Progo - Sistem Voting PMR</p>
+            <p>Dibuat dengan <i class="fas fa-heart" style="color: #dc2626;"></i> untuk PMR yang lebih baik</p>
+        </div>
+    </footer>
 
     <script src="script.js"></script>
 </body>
