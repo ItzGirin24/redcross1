@@ -9,7 +9,7 @@
     <script type="module">
         // Import the functions you need from the SDKs you need
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js';
-        import { getFirestore, collection, getDocs, query, orderBy } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js';
+        import { getFirestore, collection, getDocs, query, orderBy, doc, deleteDoc } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js';
 
         // Your web app's Firebase configuration
         const firebaseConfig = {
@@ -31,6 +31,20 @@
             const resultsContainer = document.getElementById('resultsContainer');
             const refreshBtn = document.getElementById('refreshBtn');
             const totalVotesEl = document.getElementById('totalVotes');
+
+            // Delete vote function
+            async function deleteVote(voteId, voterName) {
+                if (confirm(`Are you sure you want to delete the vote from ${voterName}? This will allow them to vote again.`)) {
+                    try {
+                        await deleteDoc(doc(db, 'votes', voteId));
+                        alert('Vote deleted successfully!');
+                        loadVotingResults(); // Refresh the results
+                    } catch (error) {
+                        console.error('Error deleting vote:', error);
+                        alert('Error deleting vote: ' + error.message);
+                    }
+                }
+            }
 
             // Load and display voting results
             async function loadVotingResults() {
@@ -64,6 +78,7 @@
 
                         // Add to voter list
                         voterList.push({
+                            id: vote.id,
                             name: vote.userName,
                             email: vote.userEmail,
                             candidate: vote.candidateName,
@@ -121,12 +136,12 @@
 
                 resultsHTML += '</div>';
 
-                // Voter list
+                // Voter list with delete buttons
                 resultsHTML += '<div class="voter-list">';
                 resultsHTML += '<h3>Detailed Voter List</h3>';
                 resultsHTML += '<div class="voter-table-container">';
                 resultsHTML += '<table class="voter-table">';
-                resultsHTML += '<thead><tr><th>Voter Name</th><th>Email</th><th>Voted For</th><th>Timestamp</th></tr></thead>';
+                resultsHTML += '<thead><tr><th>Voter Name</th><th>Email</th><th>Memilih</th><th>Timestamp</th><th>Actions</th></tr></thead>';
                 resultsHTML += '<tbody>';
 
                 voterList.forEach(voter => {
@@ -136,6 +151,11 @@
                             <td>${voter.email}</td>
                             <td>${voter.candidate}</td>
                             <td>${voter.timestamp}</td>
+                            <td>
+                                <button onclick="window.deleteVote('${voter.id}', '${voter.name}')" class="delete-vote-btn">
+                                    🗑️ Delete Vote
+                                </button>
+                            </td>
                         </tr>
                     `;
                 });
@@ -146,6 +166,9 @@
 
                 resultsContainer.innerHTML = resultsHTML;
             }
+
+            // Make delete function available globally
+            window.deleteVote = deleteVote;
 
             // Refresh button event listener
             refreshBtn.addEventListener('click', loadVotingResults);
@@ -162,7 +185,7 @@
     <div id="app">
         <header>
             <h1>PMR Voting Admin Dashboard</h1>
-            <p>SMA IT Abu Bakar Boarding School - Real-time Vote Monitoring</p>
+            <p>SMA IT Abu Bakar Boarding School - Real-time Vote Monitoring & Management</p>
         </header>
 
         <main>
